@@ -9,6 +9,7 @@ import { SegmentPhrasePuzzleType } from './puzzle-types/segment-phrase.puzzle-ty
 import { ColorChainPuzzleType } from './puzzle-types/color-chain.puzzle-type';
 import { HiddenColorsPuzzleType } from './puzzle-types/hidden-colors.puzzle-type';
 import { SyllabicRotationPuzzleType } from './puzzle-types/syllabic-rotation.puzzle-type';
+import { ImageOnlyPuzzleType } from './puzzle-types/image-only.puzzle-type';
 
 export const LAB_PUZZLE_TYPES: PuzzleType[] = [
   new CountBySymbolPuzzleType(),
@@ -21,4 +22,5 @@ export const LAB_PUZZLE_TYPES: PuzzleType[] = [
   new ColorChainPuzzleType(),
   new HiddenColorsPuzzleType(),
   new SyllabicRotationPuzzleType(),
+  new ImageOnlyPuzzleType(),
 ];

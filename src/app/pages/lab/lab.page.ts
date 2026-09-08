@@ -523,6 +523,7 @@ export class LabPage {
   protected isTextAnswer(): boolean {
     return (
       this.selectedType().id === 'navigation' ||
+      this.selectedType().id === 'image-only-symbols' ||
       this.selectedType().id === 'clock-letters' ||
       this.selectedType().id === 'faux-words' ||
       this.selectedType().id === 'segment-phrase' ||
@@ -634,7 +635,9 @@ export class LabPage {
       return;
     }
 
-    const isCorrect = this.challengeAnswerState() === this.instance().solution;
+    const isCorrect = this.isTextAnswer()
+      ? this.challengeAnswerState() === this.normalizeChallengeAnswer(this.instance().solution)
+      : this.challengeAnswerState() === this.instance().solution;
     this.challengeFeedbackState.set(isCorrect ? 'correct' : 'incorrect');
 
     if (isCorrect && this.isPlayPage()) {
@@ -1221,6 +1224,7 @@ export class LabPage {
     const shouldShuffleCode =
       !variant.id.startsWith('3-') &&
       variant.id !== 'navigation-main' &&
+      variant.id !== 'image-only-symbols-main' &&
       variant.id !== 'clock-letters-main' &&
       variant.id !== 'faux-words-main' &&
       variant.id !== 'segment-phrase-main' &&
@@ -1319,6 +1323,9 @@ export class LabPage {
     if (variantId === 'navigation-main') {
       return this.createNavigationFigure(example);
     }
+    if (variantId === 'image-only-symbols-main') {
+      return this.createImageOnlyFigure(example);
+    }
     if (variantId === 'clock-letters-main') {
       return this.createClockLettersFigure(random, example);
     }
@@ -1369,6 +1376,22 @@ export class LabPage {
       displayMode: 'navigation',
       imageSrc: 'puzzles/navigation.png',
       clue: 'Les itinéraires devraient m’indiquer ce dont j’ai besoin pour la suite.',
+    };
+  }
+
+  private createImageOnlyFigure(example: PuzzleExample): PuzzleExampleFigure {
+    return {
+      id: `example-${example.id}`,
+      example,
+      viewBox: '0 0 1 1',
+      frame: { x: 0, y: 0, width: 1, height: 1 },
+      gridSize: 1,
+      segments: [],
+      shapes: [],
+      markers: [],
+      code: 'ARC-EN-CIEL',
+      displayMode: 'navigation',
+      imageSrc: 'puzzles/image-symboles.png',
     };
   }
 

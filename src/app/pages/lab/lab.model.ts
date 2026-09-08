@@ -56,10 +56,6 @@ export class PuzzleVariant {
   readonly partialAnswers: PuzzlePartialAnswer[];
 
   constructor(input: PuzzleVariantInput) {
-    if (input.examples.length < 1) {
-      throw new Error(`La variante « ${input.name} » doit contenir au moins un exemple.`);
-    }
-
     this.id = input.id;
     this.name = input.name;
     this.state = input.state;
