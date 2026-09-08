@@ -15,7 +15,10 @@ import {
   CustomKeyboardKey,
 } from '../shared/custom-keyboard/custom-keyboard.component';
 import { PuzzleSuccessPopupComponent } from '../shared/puzzle-success-popup/puzzle-success-popup.component';
-import { arithmeticExpressionToLatex } from './mental-arithmetic-expression';
+import {
+  ArithmeticExpressionPart,
+  arithmeticExpressionToInteractiveLatex,
+} from './mental-arithmetic-expression';
 import { ArithmeticProblem, createArithmeticProblem } from './mental-arithmetic-problem';
 
 @Component({
@@ -48,9 +51,13 @@ export class MentalArithmeticPage {
   protected readonly isCorrect = computed(
     () => this.answer().trim().length > 0 && Number(this.answer()) === this.problem().answer,
   );
-  protected readonly displayExpression = computed<SafeHtml>(() =>
-    this.renderExpression(this.problem().expression),
+  protected readonly interactiveExpression = computed(() =>
+    arithmeticExpressionToInteractiveLatex(this.problem().expression),
   );
+  protected readonly displayExpression = computed<SafeHtml>(() =>
+    this.renderExpression(this.interactiveExpression().latex),
+  );
+  protected readonly selectedSubresult = signal<ArithmeticExpressionPart | null>(null);
   protected readonly answerHint = computed(() => {
     if (this.hintLevel() === 0) {
       return '';
@@ -140,7 +147,29 @@ export class MentalArithmeticPage {
     this.answer.set('');
     this.isSolved.set(false);
     this.hintLevel.set(0);
+    this.selectedSubresult.set(null);
     this.focusAnswerField();
+  }
+
+  protected showSubresult(event: MouseEvent): void {
+    const part = this.subresultForTarget(event.target);
+
+    if (part) {
+      this.selectedSubresult.set(part);
+    }
+  }
+
+  protected showSubresultWithKeyboard(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    const part = this.subresultForTarget(event.target);
+
+    if (part) {
+      this.selectedSubresult.set(part);
+    }
   }
 
   @HostListener('document:pointerdown', ['$event'])
@@ -179,14 +208,34 @@ export class MentalArithmeticPage {
     window.setTimeout(() => this.answerField?.nativeElement.focus());
   }
 
-  private renderExpression(expression: string): SafeHtml {
-    const latex = arithmeticExpressionToLatex(expression);
+  private renderExpression(latex: string): SafeHtml {
     const rendered = katex.renderToString(latex, {
       displayMode: true,
       output: 'htmlAndMathml',
+      strict: false,
+      trust: true,
       throwOnError: true,
     });
+    const accessibleRendered = rendered.replace(
+      /(<span\b[^>]*data-part-id="\d+"[^>]*)>/g,
+      '$1 role="button" tabindex="0" aria-label="Afficher le sous-résultat">',
+    );
 
-    return this.sanitizer.bypassSecurityTrustHtml(rendered);
+    return this.sanitizer.bypassSecurityTrustHtml(accessibleRendered);
+  }
+
+  private subresultForTarget(target: EventTarget | null): ArithmeticExpressionPart | null {
+    if (!(target instanceof Element)) {
+      return null;
+    }
+
+    const partElement = target.closest<HTMLElement>('[data-part-id]');
+    const partId = Number(partElement?.dataset['partId']);
+
+    if (!partElement || !Number.isInteger(partId)) {
+      return null;
+    }
+
+    return this.interactiveExpression().parts.find((part) => part.id === partId) ?? null;
   }
 }

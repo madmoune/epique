@@ -5,7 +5,7 @@
   align-items: center;
   width: min(52rem, calc(100% - 5.25rem));
   margin: max(0.65rem, env(safe-area-inset-top))
-    max(0.75rem, calc(3.6rem + env(safe-area-inset-right))) 0.55rem auto;
+    calc(2.75rem + max(0.75rem, env(safe-area-inset-right)) + 0.75rem) 0.55rem auto;
   padding: 0.45rem 0.55rem;
   box-sizing: border-box;
   border: 1px solid var(--border);

@@ -22,6 +22,7 @@ describe('createArithmeticProblem', () => {
       expect(problem.expression).toContain(' x ');
       expect(problem.expression).toContain(' + ');
       expect(problem.expression).toContain(' - ');
+      expect(problem.expression).toMatch(/\+ \(\d{4} - \d{4}\)$/);
     }
   });
 

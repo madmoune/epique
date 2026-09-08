@@ -1,0 +1,189 @@
+<main class="page color-rods-page">
+  <a routerLink="/" fragment="spatial-placement" class="back-link">Retour au menu</a>
+
+  @if (selectedRod(); as rod) {
+    <div
+      class="selected-rod-preview"
+      [style.left.px]="pointerPosition().x"
+      [style.top.px]="pointerPosition().y"
+      aria-hidden="true"
+    >
+      <span class="rod-visual floating">
+        @for (color of rod.colors; track $index) {
+          <span class="rod-band" [class]="'rod-color-' + color"></span>
+        }
+      </span>
+    </div>
+  }
+
+  <section class="shell">
+    <header class="hero">
+      <p class="eyebrow">Déduction · Alignement</p>
+      <h1>Tiges colorées</h1>
+      <p class="intro">
+        Place toutes les tiges entre le départ et l’arrivée. Aucune couleur ne doit se répéter entre
+        deux tiges voisines.
+      </p>
+    </header>
+
+    @if (isSolved()) {
+      <app-puzzle-success-popup
+        title="Chaîne complète!"
+        message="Aucune couleur ne se répète entre deux tiges voisines."
+        actionLabel="Nouveau défi"
+        (action)="newPuzzle()"
+      />
+    }
+
+    <section class="game-layout">
+      <section class="board-panel" aria-labelledby="chain-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">La chaîne</p>
+            <h2 id="chain-title">Du départ à l’arrivée</h2>
+          </div>
+          <div class="progress" aria-label="Progression">
+            <span>Tiges placées</span>
+            <strong>{{ filledCount() }} / {{ slots.length }}</strong>
+          </div>
+        </div>
+
+        <div class="chain-scroll">
+          <div class="rod-chain" aria-label="Chaîne de tiges">
+            <article
+              class="fixed-rod"
+              role="img"
+              [attr.aria-label]="rodName(puzzle().start) + ': ' + rodLabel(puzzle().start)"
+            >
+              <span class="rod-caption">Départ</span>
+              <div class="rod-visual">
+                @for (color of puzzle().start.colors; track $index) {
+                  <span class="rod-band" [class]="'rod-color-' + color" aria-hidden="true"></span>
+                }
+              </div>
+            </article>
+
+            @for (slot of slots; track slot) {
+              <span
+                class="chain-connector"
+                [class.conflict]="conflictingConnectionIndexes().has(slot)"
+                aria-hidden="true"
+              >
+                @for (level of levels; track level) {
+                  <span></span>
+                }
+              </span>
+
+              <button
+                type="button"
+                class="rod-slot"
+                [class.filled]="placedRods()[slot] !== null"
+                [class.selected]="selectedSlotIndex() === slot"
+                [class.lifted]="selectedSlotIndex() === slot"
+                [class.conflict]="conflictingSlotIndexes().has(slot)"
+                [class.ready]="selectedSlotIndex() !== null"
+                [draggable]="placedRods()[slot] !== null && !isSolved()"
+                [disabled]="isSolved()"
+                (click)="handleSlotClick(slot, $event)"
+                (dragstart)="startDraggingFromSlot(slot, $event)"
+                (dragend)="endDragging()"
+                (dragover)="allowDrop($event)"
+                (drop)="dropOnSlot(slot, $event)"
+                [attr.aria-pressed]="selectedSlotIndex() === slot"
+                [attr.aria-label]="slotAriaLabel(slot)"
+              >
+                @if (placedRods()[slot]; as rod) {
+                  <span class="slot-number">{{ slot + 1 }}</span>
+                  <span class="rod-visual" role="img" [attr.aria-label]="rodLabel(rod)">
+                    @for (color of rod.colors; track $index) {
+                      <span
+                        class="rod-band"
+                        [class]="'rod-color-' + color"
+                        aria-hidden="true"
+                      ></span>
+                    }
+                  </span>
+                } @else {
+                  <span class="slot-number">{{ slot + 1 }}</span>
+                  <span class="empty-slot" aria-hidden="true">+</span>
+                }
+              </button>
+            }
+
+            <span
+              class="chain-connector"
+              [class.conflict]="conflictingConnectionIndexes().has(slots.length)"
+              aria-hidden="true"
+            >
+              @for (level of levels; track level) {
+                <span></span>
+              }
+            </span>
+
+            <article
+              class="fixed-rod"
+              role="img"
+              [attr.aria-label]="rodName(puzzle().finish) + ': ' + rodLabel(puzzle().finish)"
+            >
+              <span class="rod-caption">Arrivée</span>
+              <div class="rod-visual">
+                @for (color of puzzle().finish.colors; track $index) {
+                  <span class="rod-band" [class]="'rod-color-' + color" aria-hidden="true"></span>
+                }
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <p class="visually-hidden" role="status">{{ feedback().text }}</p>
+      </section>
+
+      <aside class="tray-panel" aria-labelledby="tray-title">
+        <div class="panel-heading compact">
+          <div>
+            <p class="section-kicker">La réserve</p>
+            <h2 id="tray-title">Tiges à placer</h2>
+          </div>
+          <span class="tray-count">{{ availableRods().length }}</span>
+        </div>
+
+        @if (availableRods().length > 0) {
+          <div class="rod-tray" (dragover)="allowDrop($event)" (drop)="dropOnTray($event)">
+            @for (rod of availableRods(); track rod.id) {
+              <button
+                type="button"
+                class="tray-rod"
+                [class.selected]="selectedTrayRodId() === rod.id"
+                [class.lifted]="selectedTrayRodId() === rod.id"
+                [draggable]="!isSolved()"
+                [disabled]="isSolved()"
+                [attr.aria-label]="rodName(rod) + ': ' + rodLabel(rod)"
+                (click)="selectRod(rod.id, $event)"
+                (dragstart)="startDraggingFromTray(rod.id, $event)"
+                (dragend)="endDragging()"
+              >
+                <span class="rod-visual small" aria-hidden="true">
+                  @for (color of rod.colors; track $index) {
+                    <span class="rod-band" [class]="'rod-color-' + color"></span>
+                  }
+                </span>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="empty-tray">Toutes les tiges sont placées.</p>
+        }
+      </aside>
+    </section>
+
+    <div class="actions game-actions">
+      <button type="button" class="secondary-button" (click)="placeHint()" [disabled]="isSolved()">
+        Indice
+      </button>
+      <button type="button" class="secondary-button" (click)="resetPath()" [disabled]="isSolved()">
+        Tout effacer
+      </button>
+      <button type="button" class="secondary-button" (click)="newPuzzle()">Nouveau défi</button>
+    </div>
+  </section>
+</main>

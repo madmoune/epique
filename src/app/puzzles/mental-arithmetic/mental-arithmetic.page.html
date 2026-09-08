@@ -6,8 +6,8 @@
       <p class="eyebrow">Défi PEDMAS</p>
       <h1>Arithmétique mentale</h1>
       <p class="intro">
-        Des opérations imbriquées avec carrés, cubes et divisions exactes — sans perdre le fil des
-        priorités.
+        Des opérations imbriquées avec carrés, cubes, divisions exactes et nombres à quatre chiffres
+        — sans perdre le fil des priorités.
       </p>
     </header>
 
@@ -70,8 +70,21 @@
           class="problem"
           [style.--equation-size]="equationSize()"
           [innerHTML]="displayExpression()"
+          (click)="showSubresult($event)"
+          (keydown)="showSubresultWithKeyboard($event)"
         ></div>
+        <p class="equation-help">
+          Clique sur une parenthèse, une multiplication, une division, un exposant ou une racine
+          carrée pour voir son sous-résultat.
+        </p>
       </section>
+
+      @if (selectedSubresult(); as subresult) {
+        <p class="subresult" role="status">
+          Sous-résultat de <code>{{ subresult.expression }}</code> :
+          <strong>{{ subresult.value }}</strong>
+        </p>
+      }
 
       <label class="answer-group">
         <span>Réponse</span>

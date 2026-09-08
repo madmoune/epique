@@ -9,8 +9,31 @@ type ArithmeticExpressionNode =
       right: ArithmeticExpressionNode;
     };
 
+export type ArithmeticExpressionPart = {
+  id: number;
+  expression: string;
+  value: number;
+};
+
+export type InteractiveArithmeticExpression = {
+  latex: string;
+  parts: readonly ArithmeticExpressionPart[];
+};
+
 export function arithmeticExpressionToLatex(expression: string): string {
   return renderLatex(new ArithmeticExpressionParser(tokenize(expression)).parse());
+}
+
+export function arithmeticExpressionToInteractiveLatex(
+  expression: string,
+): InteractiveArithmeticExpression {
+  const parts: ArithmeticExpressionPart[] = [];
+  const root = new ArithmeticExpressionParser(tokenize(expression)).parse();
+
+  return {
+    latex: renderInteractiveLatex(root, parts, true, false),
+    parts,
+  };
 }
 
 class ArithmeticExpressionParser {
@@ -189,6 +212,121 @@ function renderLatex(node: ArithmeticExpressionNode): string {
   return `${renderLatex(node.left)} ${operator} ${renderLatex(node.right)}`;
 }
 
+function renderInteractiveLatex(
+  node: ArithmeticExpressionNode,
+  parts: ArithmeticExpressionPart[],
+  allowInteractive: boolean,
+  wrapNode = allowInteractive,
+): string {
+  if (node.kind === 'number') {
+    return node.value;
+  }
+
+  if (node.kind === 'group') {
+    const shouldWrap = allowInteractive && wrapNode;
+    const latex = `\\left(${renderInteractiveLatex(
+      node.expression,
+      parts,
+      shouldWrap ? false : allowInteractive,
+    )}\\right)`;
+    return shouldWrap ? wrapInteractivePart(node, latex, parts) : latex;
+  }
+
+  if (node.kind === 'square-root') {
+    const shouldWrap = allowInteractive && wrapNode;
+    const childInteractive = shouldWrap ? false : allowInteractive;
+    const radicand =
+      node.radicand.kind === 'group'
+        ? renderInteractiveLatex(node.radicand.expression, parts, childInteractive)
+        : renderInteractiveLatex(node.radicand, parts, childInteractive);
+    const latex = `\\sqrt{${radicand}}`;
+    return shouldWrap ? wrapInteractivePart(node, latex, parts) : latex;
+  }
+
+  let latex: string;
+  const shouldWrap =
+    allowInteractive &&
+    wrapNode &&
+    (node.operator === 'x' || node.operator === '/' || node.operator === '^');
+  const childInteractive = shouldWrap ? false : allowInteractive;
+
+  if (node.operator === '/') {
+    latex = `\\frac{${renderInteractiveWithoutOuterGroup(node.left, parts, childInteractive)}}{${renderInteractiveWithoutOuterGroup(node.right, parts, childInteractive)}}`;
+  } else if (node.operator === '^') {
+    latex = `${renderInteractiveLatex(node.left, parts, childInteractive)}^{${renderInteractiveWithoutOuterGroup(node.right, parts, childInteractive)}}`;
+  } else {
+    const operator = node.operator === 'x' ? '\\times' : node.operator;
+    latex = `${renderInteractiveLatex(node.left, parts, childInteractive)} ${operator} ${renderInteractiveLatex(node.right, parts, childInteractive)}`;
+  }
+
+  return shouldWrap ? wrapInteractivePart(node, latex, parts) : latex;
+}
+
 function renderWithoutOuterGroup(node: ArithmeticExpressionNode): string {
   return renderLatex(node.kind === 'group' ? node.expression : node);
+}
+
+function renderInteractiveWithoutOuterGroup(
+  node: ArithmeticExpressionNode,
+  parts: ArithmeticExpressionPart[],
+  allowInteractive: boolean,
+): string {
+  return node.kind === 'group'
+    ? renderInteractiveLatex(node.expression, parts, allowInteractive)
+    : renderInteractiveLatex(node, parts, allowInteractive);
+}
+
+function wrapInteractivePart(
+  node: ArithmeticExpressionNode,
+  latex: string,
+  parts: ArithmeticExpressionPart[],
+): string {
+  const id = parts.length;
+  parts.push({
+    id,
+    expression: describeArithmeticNode(node),
+    value: evaluateArithmeticNode(node),
+  });
+
+  return `\\htmlData{part-id=${id}}{${latex}}`;
+}
+
+function describeArithmeticNode(node: ArithmeticExpressionNode): string {
+  if (node.kind === 'number') {
+    return node.value;
+  }
+
+  if (node.kind === 'group') {
+    return `(${describeArithmeticNode(node.expression)})`;
+  }
+
+  if (node.kind === 'square-root') {
+    return `√(${describeArithmeticNode(node.radicand)})`;
+  }
+
+  const operator = node.operator === 'x' ? '×' : node.operator;
+  return `${describeArithmeticNode(node.left)} ${operator} ${describeArithmeticNode(node.right)}`;
+}
+
+function evaluateArithmeticNode(node: ArithmeticExpressionNode): number {
+  if (node.kind === 'number') {
+    return Number(node.value);
+  }
+
+  if (node.kind === 'group') {
+    return evaluateArithmeticNode(node.expression);
+  }
+
+  if (node.kind === 'square-root') {
+    return Math.sqrt(evaluateArithmeticNode(node.radicand));
+  }
+
+  const left = evaluateArithmeticNode(node.left);
+  const right = evaluateArithmeticNode(node.right);
+
+  if (node.operator === '+') return left + right;
+  if (node.operator === '-') return left - right;
+  if (node.operator === 'x') return left * right;
+  if (node.operator === '/') return left / right;
+  return left ** right;
 }

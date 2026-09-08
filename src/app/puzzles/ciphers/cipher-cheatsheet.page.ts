@@ -62,13 +62,6 @@ export class CipherCheatsheetPage {
       route: '/ciphers/caesar',
     },
     {
-      id: 'cree-syllabics',
-      title: 'Syllabique cri',
-      description:
-        'Les sons du mot français sont rapprochés des caractères syllabiques du cri oriental.',
-      route: '/ciphers/cree-syllabics',
-    },
-    {
       id: 'morse',
       title: 'Morse',
       description: 'Chaque lettre est écrite avec une combinaison de points et de traits.',
@@ -97,6 +90,13 @@ export class CipherCheatsheetPage {
       title: 'Tap code',
       description: 'Deux chiffres donnent la ligne et la colonne d’une lettre dans la grille.',
       route: '/ciphers/tap-code',
+    },
+    {
+      id: 'cree-syllabics',
+      title: 'Syllabique cri',
+      description:
+        'Les sons du mot français sont rapprochés des caractères syllabiques du cri oriental.',
+      route: '/ciphers/cree-syllabics',
     },
   ];
 

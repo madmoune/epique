@@ -1,5 +1,8 @@
 import katex from 'katex';
-import { arithmeticExpressionToLatex } from './mental-arithmetic-expression';
+import {
+  arithmeticExpressionToInteractiveLatex,
+  arithmeticExpressionToLatex,
+} from './mental-arithmetic-expression';
 import {
   MENTAL_ARITHMETIC_TEMPLATE_COUNT,
   createArithmeticProblem,
@@ -28,6 +31,58 @@ describe('arithmeticExpressionToLatex', () => {
     expect(() => arithmeticExpressionToLatex('4 * 3')).toThrow(
       'Caractère arithmétique non reconnu',
     );
+  });
+
+  it('exposes clickable subresults for grouped parts', () => {
+    const interactiveExpression = arithmeticExpressionToInteractiveLatex('(5 + 3) + (4321 - 1234)');
+
+    expect(interactiveExpression.latex).toContain('part-id=');
+    expect(() =>
+      katex.renderToString(interactiveExpression.latex, {
+        displayMode: true,
+        output: 'htmlAndMathml',
+        strict: false,
+        trust: true,
+        throwOnError: true,
+      }),
+    ).not.toThrow();
+    expect(interactiveExpression.parts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ expression: '(5 + 3)', value: 8 }),
+        expect.objectContaining({ expression: '(4321 - 1234)', value: 3087 }),
+      ]),
+    );
+  });
+
+  it('keeps clickable parts disjoint', () => {
+    const interactiveExpression = arithmeticExpressionToInteractiveLatex(
+      '(5 + 3) x (2 + 4) + (10 / 2)',
+    );
+
+    expect(interactiveExpression.parts).toEqual([
+      expect.objectContaining({ expression: '(5 + 3) × (2 + 4)', value: 48 }),
+      expect.objectContaining({ expression: '(10 / 2)', value: 5 }),
+    ]);
+  });
+
+  it('exposes powers as independent clickable subresults', () => {
+    const interactiveExpression = arithmeticExpressionToInteractiveLatex('11^2 + (4321 - 1234)');
+
+    expect(interactiveExpression.parts).toEqual([
+      expect.objectContaining({ expression: '11 ^ 2', value: 121 }),
+      expect.objectContaining({ expression: '(4321 - 1234)', value: 3087 }),
+    ]);
+  });
+
+  it('exposes square roots as independent clickable subresults', () => {
+    const interactiveExpression = arithmeticExpressionToInteractiveLatex(
+      'sqrt(144) + (4321 - 1234)',
+    );
+
+    expect(interactiveExpression.parts).toEqual([
+      expect.objectContaining({ expression: '√(144)', value: 12 }),
+      expect.objectContaining({ expression: '(4321 - 1234)', value: 3087 }),
+    ]);
   });
 
   it('renders every generated problem template with KaTeX', () => {

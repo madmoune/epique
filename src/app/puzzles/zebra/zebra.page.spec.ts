@@ -209,6 +209,27 @@ describe('ZebraPage', () => {
     }
   });
 
+  it('makes one-between clues explicit for small grids', () => {
+    const randomSpy = vi.spyOn(Math, 'random');
+
+    try {
+      for (const randomValue of [0, 0.2, 0.4, 0.6, 0.8]) {
+        randomSpy.mockReturnValue(randomValue);
+
+        expect(
+          page.describeOneBetweenClue(
+            { id: 'color' },
+            'Violette',
+            { id: 'person' },
+            'Bruno',
+          ),
+        ).toMatch(/une seule maison/i);
+      }
+    } finally {
+      randomSpy.mockRestore();
+    }
+  });
+
   it('keeps every spatial clue anchored to house positions', () => {
     const randomSpy = vi.spyOn(Math, 'random');
 

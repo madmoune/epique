@@ -233,12 +233,6 @@ export class HomePage {
           route: '/ciphers/nato',
           tag: 'Codes',
         },
-        {
-          title: 'Syllabique cri',
-          description: 'Écoute et lis le mot français transcrit en syllabes cries.',
-          route: '/ciphers/cree-syllabics',
-          tag: 'Codes',
-        },
       ],
     },
     {
@@ -426,6 +420,12 @@ export class HomePage {
           description: 'Déplace les véhicules dans une grille 6×6 pour libérer la voiture rouge.',
           route: '/rush-hour',
           tag: 'Blocage',
+        },
+        {
+          title: 'Tiges colorées',
+          description: 'Aligne les tiges sans répéter une couleur au même niveau.',
+          route: '/color-rods',
+          tag: 'Couleurs',
         },
         {
           title: 'Dé logique',

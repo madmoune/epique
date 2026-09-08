@@ -345,7 +345,7 @@ html[data-theme] body :is(input, textarea, select, .answer-input):focus {
   outline-color: color-mix(in srgb, var(--focus) 32%, transparent) !important;
 }
 
-html[data-theme] body button:not(.stone-button):not(.grid-cell):not(.piece-button):not(.board-piece):not(.tile-button):not(.picker-button):not(.choice-button):not(.encode-option):not(.symbol-button):not(.piece-slot):not(.name-edit-button):not(.type-card):not(.display-mode-button):not(.weight-piece):not([data-board-cell]):not([data-pathway-slot]) {
+html[data-theme] body button:not(.stone-button):not(.grid-cell):not(.piece-button):not(.board-piece):not(.tile-button):not(.picker-button):not(.choice-button):not(.encode-option):not(.symbol-button):not(.piece-slot):not(.name-edit-button):not(.type-card):not(.display-mode-button):not(.weight-piece):not(.pigpen-tile):not([data-board-cell]):not([data-pathway-slot]) {
   background: var(--accent);
   color: var(--accent-contrast);
 }

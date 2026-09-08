@@ -108,6 +108,11 @@ export const routes: Routes = [
     loadComponent: () => import('./puzzles/tiges/tiges.page').then((m) => m.TigesPage),
   },
   {
+    path: 'color-rods',
+    loadComponent: () =>
+      import('./puzzles/color-rods/color-rods.page').then((m) => m.ColorRodsPage),
+  },
+  {
     path: 'shape-layers',
     loadComponent: () =>
       import('./puzzles/shape-layers/shape-layers.page').then((m) => m.ShapeLayersPage),

@@ -18,6 +18,12 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     return value === max ? min : value + 1;
   };
   const type = randomInt(0, MENTAL_ARITHMETIC_TEMPLATE_COUNT - 1);
+  const largeAddend = randomInt(1_000, 9_999);
+  const largeSubtrahend = randomInt(1_000, largeAddend);
+  const withLargeAddSubtract = (problem: ArithmeticProblem): ArithmeticProblem => ({
+    expression: `${problem.expression} + (${largeAddend} - ${largeSubtrahend})`,
+    answer: problem.answer + largeAddend - largeSubtrahend,
+  });
 
   if (type === 0) {
     const a = randomInt(5, 14);
@@ -29,10 +35,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const tail = randomInt(12, 48);
     const root = randomInt(4, 13);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${a} + ${b}) x (${squaredBase}^2 - ${adjustment}) / ${divisor} + ${tail} - sqrt(${root ** 2})`,
       answer: (a + b) * factor + tail - root,
-    };
+    });
   }
 
   if (type === 1) {
@@ -43,10 +49,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const e = randomInt(2, d - 2);
     const root = randomInt(3, 12);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${a}^2 - ${b}^2) / (${a} - ${b}) + ${c} x (${d} + ${e}) - sqrt(${root ** 2})`,
       answer: a + b + c * (d + e) - root,
-    };
+    });
   }
 
   if (type === 2) {
@@ -60,10 +66,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const root = randomInt(3, 11);
     const rootMultiplier = randomInt(2, 7);
 
-    return {
+    return withLargeAddSubtract({
       expression: `${a} x (${b} + ${c}) - (${cubedBase}^3 + ${adjustment}) / ${divisor} + sqrt(${root ** 2}) x ${rootMultiplier}`,
       answer: a * (b + c) - quotient + root * rootMultiplier,
-    };
+    });
   }
 
   if (type === 3) {
@@ -76,10 +82,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const e = randomInt(2, d - 2);
     const f = randomInt(3, 9);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${a} + ${b})^2 / ${divisor} - ${c} x (${d} - ${e}) + ${f}^2`,
       answer: total ** 2 / divisor - c * (d - e) + f ** 2,
-    };
+    });
   }
 
   if (type === 4) {
@@ -91,10 +97,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const b = randomInt(3, 9);
     const root = randomInt(4, 13);
 
-    return {
+    return withLargeAddSubtract({
       expression: `${start} - ${quotient * divisor} / ${divisor} x ${multiplier} + (${a} + ${b})^2 - sqrt(${root ** 2})`,
       answer: start - quotient * multiplier + (a + b) ** 2 - root,
-    };
+    });
   }
 
   if (type === 5) {
@@ -109,10 +115,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const multiplier = randomInt(2, 7);
     const root = randomInt(3, 12);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${cubedBase}^3 - ${adjustment}) / ${divisor} + (${a} x ${b} - ${c}) x ${multiplier} - sqrt(${root ** 2})`,
       answer: quotient + (a * b - c) * multiplier - root,
-    };
+    });
   }
 
   if (type === 6) {
@@ -126,10 +132,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const quotient = randomInt(8, 25);
     const multiplier = randomIntExcluding(2, 6, f + g);
 
-    return {
+    return withLargeAddSubtract({
       expression: `${a}^2 - (${b} + ${c}) x (${d} - ${e}) + ${(f + g) * quotient} / (${f} + ${g}) x ${multiplier}`,
       answer: a ** 2 - (b + c) * (d - e) + quotient * multiplier,
-    };
+    });
   }
 
   if (type === 7) {
@@ -143,10 +149,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const adjustment = cubedBase ** 3 - divisor * quotient;
     const tail = randomInt(10, 50);
 
-    return {
+    return withLargeAddSubtract({
       expression: `sqrt(${root ** 2}) x (${a} + ${b}^2) - (${cubedBase}^3 - ${adjustment}) / ${divisor} + ${tail}`,
       answer: root * (a + b ** 2) - quotient + tail,
-    };
+    });
   }
 
   if (type === 8) {
@@ -160,10 +166,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const f = randomInt(3, 12);
     const g = randomInt(2, 9);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${a} x ${b} + ${c})^2 / ${divisor} - (${d}^2 - ${e}) + ${f} x ${g}`,
       answer: total ** 2 / divisor - (d ** 2 - e) + f * g,
-    };
+    });
   }
 
   if (type === 9) {
@@ -178,10 +184,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const cubedBase = randomInt(2, 5);
     const root = randomInt(4, 14);
 
-    return {
+    return withLargeAddSubtract({
       expression: `${start} - (${a} + ${b})^2 + (${c} x ${d} + ${adjustment}) / ${divisor} - ${cubedBase}^3 + sqrt(${root ** 2})`,
       answer: start - (a + b) ** 2 + quotient - cubedBase ** 3 + root,
-    };
+    });
   }
 
   if (type === 10) {
@@ -196,10 +202,10 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
     const divisor = randomInt(2, 8);
     const root = randomInt(3, 12);
 
-    return {
+    return withLargeAddSubtract({
       expression: `(${a} + (${b} x ${c} - ${d})) x ${multiplier} - (${squaredBase}^2 + ${offset}) + ${quotient * divisor} / ${divisor} - sqrt(${root ** 2})`,
       answer: (a + (b * c - d)) * multiplier - (squaredBase ** 2 + offset) + quotient - root,
-    };
+    });
   }
 
   const a = randomInt(3, 10);
@@ -212,8 +218,8 @@ export function createArithmeticProblem(random: () => number = Math.random): Ari
   const e = randomInt(3, 9);
   const root = randomInt(4, 13);
 
-  return {
+  return withLargeAddSubtract({
     expression: `(${start} - (${a} + ${b}) x ${multiplier}) / ${divisor} + (${d} + ${e})^2 - sqrt(${root ** 2})`,
     answer: quotient + (d + e) ** 2 - root,
-  };
+  });
 }

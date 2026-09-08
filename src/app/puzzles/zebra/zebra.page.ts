@@ -2077,11 +2077,11 @@ export class ZebraPage {
     const secondDescription = this.describeHousePosition(secondCategory, secondValue);
 
     return this.randomItem([
-      `Une maison se trouve exactement entre ${firstDescription} et ${secondDescription}.`,
+      `Une seule maison se trouve exactement entre ${firstDescription} et ${secondDescription}.`,
       `Une seule maison sépare ${firstDescription} de ${secondDescription}.`,
-      `Il y a exactement une maison entre ${firstDescription} et ${secondDescription}.`,
-      `Les positions de ${firstDescription} et ${secondDescription} diffèrent de deux cases.`,
-      `${this.capitalize(firstDescription)} et ${secondDescription} occupent des positions espacées de deux cases.`,
+      `Il y a exactement une seule maison entre ${firstDescription} et ${secondDescription}.`,
+      `Une seule maison se trouve entre ${firstDescription} et ${secondDescription}.`,
+      `${this.capitalize(firstDescription)} et ${secondDescription} sont séparées par une seule maison.`,
     ]);
   }
 

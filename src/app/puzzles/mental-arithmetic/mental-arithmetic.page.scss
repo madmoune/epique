@@ -197,6 +197,13 @@ h1 {
   scrollbar-width: thin;
 }
 
+.equation-help {
+  margin: 0.35rem 0 0;
+  color: #6f4c1c;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 :host ::ng-deep .problem .katex {
   font-size: 1em;
 }
@@ -205,6 +212,43 @@ h1 {
   min-width: max-content;
   margin: 0;
   text-align: center;
+}
+
+:host ::ng-deep .problem [data-part-id] {
+  border-radius: 0.18em;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+:host ::ng-deep .problem [data-part-id]:hover,
+:host ::ng-deep .problem [data-part-id]:focus-visible {
+  background: rgb(216 160 75 / 22%);
+  box-shadow: 0 0 0 0.08em rgb(216 160 75 / 30%);
+  outline: none;
+}
+
+.subresult {
+  width: min(100%, 34rem);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d8c5a3;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #5b3a00;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.subresult code {
+  color: #202020;
+  font-weight: 800;
+}
+
+.subresult strong {
+  font-size: 1.15em;
 }
 
 .answer-group {
@@ -350,5 +394,15 @@ button {
     border-color: var(--border) !important;
     background: var(--surface-raised) !important;
     color: var(--text) !important;
+  }
+
+  .subresult {
+    border-color: var(--border) !important;
+    background: var(--surface-raised) !important;
+    color: var(--text) !important;
+  }
+
+  .subresult code {
+    color: var(--text);
   }
 }
