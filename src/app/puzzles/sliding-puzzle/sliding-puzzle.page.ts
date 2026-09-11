@@ -20,6 +20,7 @@ export class SlidingPuzzlePage {
   protected readonly hasStarted = signal(false);
   protected readonly imageUrl = signal('');
   protected readonly tileImageUrls = signal<string[]>([]);
+  protected readonly showImageTileNumbers = signal(false);
   private readonly imageTileSignatures = signal<string[]>([]);
   private imageSignatureRequest = 0;
   protected readonly isSolved = computed(
@@ -38,6 +39,12 @@ export class SlidingPuzzlePage {
     if (this.mode() === mode) return;
     this.mode.set(mode);
     this.newPuzzle();
+  }
+
+  protected setShowImageTileNumbers(event: Event): void {
+    if (event.target instanceof HTMLInputElement) {
+      this.showImageTileNumbers.set(event.target.checked);
+    }
   }
 
   protected newPuzzle(): void {
@@ -99,7 +106,10 @@ export class SlidingPuzzlePage {
   }
 
   protected tileLabel(tile: number): string {
-    return this.mode() === 'numbers' ? String(tile) : `Morceau d’image ${tile}`;
+    if (this.mode() === 'numbers') return String(tile);
+    return this.showImageTileNumbers()
+      ? `Morceau d’image ${tile}, numéro ${tile}`
+      : `Morceau d’image ${tile}`;
   }
 
   private neighbors(index: number): number[] {

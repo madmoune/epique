@@ -13,6 +13,17 @@
       <button type="button" [class.active]="mode() === 'image'" (click)="setMode('image')">▧ Image</button>
     </div>
 
+    @if (mode() === 'image') {
+      <label class="image-number-toggle">
+        <input
+          type="checkbox"
+          [checked]="showImageTileNumbers()"
+          (change)="setShowImageTileNumbers($event)"
+        />
+        <span>Afficher les chiffres sur les pièces</span>
+      </label>
+    }
+
     <div class="game-layout">
       <div class="board" [class.image-mode]="mode() === 'image'" aria-label="Grille du taquin 4 par 4">
         @for (tile of board(); track $index) {
@@ -24,6 +35,9 @@
               @if (mode() === 'numbers') { <span>{{ tile }}</span> }
               @else {
                 <img class="tile-image" [src]="tileImageUrl(tile)" alt="" />
+                @if (showImageTileNumbers()) {
+                  <span class="tile-number" aria-hidden="true">{{ tile }}</span>
+                }
               }
             </button>
           }

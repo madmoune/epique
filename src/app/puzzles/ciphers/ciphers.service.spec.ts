@@ -49,6 +49,44 @@ describe('CiphersService NATO modes', () => {
     expect(puzzle.encoded).toEqual(['Charlie', 'Hotel', 'Alpha', 'Tango']);
   });
 
+  it('adds three distinct digit codes to Morse puzzles and their legend', () => {
+    const morseDigitCodes = {
+      '0': '-----',
+      '1': '.----',
+      '2': '..---',
+      '3': '...--',
+      '4': '....-',
+      '5': '.....',
+      '6': '-....',
+      '7': '--...',
+      '8': '---..',
+      '9': '----.',
+    };
+    const testService = service as any;
+    testService.morseCodes = { c: '-.-.', h: '....', a: '.-', t: '-' };
+    testService.morseDigitCodes = morseDigitCodes;
+
+    const puzzle = service.createPuzzle('morse');
+    const practice = puzzle.morseDigitPractice ?? [];
+
+    expect(practice).toHaveLength(3);
+    expect(new Set(practice.map((item: { digit: string }) => item.digit)).size).toBe(3);
+    expect(
+      practice.every(
+        (item: { digit: string; code: string }) =>
+          item.code === morseDigitCodes[item.digit as keyof typeof morseDigitCodes],
+      ),
+    ).toBe(true);
+    expect(
+      service.legendFor('morse').filter((item: { letter: string }) => /^\d$/.test(item.letter)),
+    ).toEqual(
+      Object.entries(morseDigitCodes).map(([letter, symbol]) => ({
+        letter,
+        symbol,
+      })),
+    );
+  });
+
   it('accepts NATO codes regardless of case or hyphen', () => {
     expect(service.isCorrectAnswer('xray', 'xray')).toBe(true);
     expect(service.isCorrectAnswer('X-Ray', 'xray')).toBe(true);

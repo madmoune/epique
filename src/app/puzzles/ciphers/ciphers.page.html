@@ -39,7 +39,11 @@
         }
 
         @if (isCreeSyllabics()) {
-          <div class="nato-mode-switch cree-mode-switch" role="group" aria-label="Mode syllabique cri">
+          <div
+            class="nato-mode-switch cree-mode-switch"
+            role="group"
+            aria-label="Mode syllabique cri"
+          >
             <span class="answer-mode-label">Entraînement</span>
             <button
               type="button"
@@ -212,6 +216,35 @@
             }
           </div>
 
+          @if (selectedCipher() === 'morse') {
+            <section class="morse-digit-practice" aria-label="Entraînement aux chiffres Morse">
+              <p class="morse-digit-title">Chiffres à décoder</p>
+              <p>
+                Essaie de reconnaître ces trois codes Morse, puis touche une case pour vérifier.
+              </p>
+              <div class="encoded-word">
+                @for (practice of currentPuzzle.morseDigitPractice ?? []; track $index) {
+                  <button
+                    type="button"
+                    class="morse-digit-token"
+                    [class.revealed]="isMorseDigitRevealed($index)"
+                    [attr.aria-label]="
+                      isMorseDigitRevealed($index)
+                        ? 'Chiffre ' + practice.digit
+                        : 'Code Morse d’un chiffre. Appuie pour vérifier.'
+                    "
+                    (click)="revealMorseDigit($index)"
+                  >
+                    <span class="morse-digit-code">{{ practice.code }}</span>
+                    @if (isMorseDigitRevealed($index)) {
+                      <span class="revealed-letter">{{ practice.digit }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            </section>
+          }
+
           @if (isCreeSyllabics() || cipherLegend().length > 0) {
             <details class="legend" [class.cree-legend]="isCreeSyllabics()">
               <summary (click)="handleLegendClick()">
@@ -297,6 +330,11 @@
                     </span>
                   }
                 </div>
+                @if (selectedCipher() === 'morse') {
+                  <p class="legend-note">
+                    Les chiffres de 0 à 9 utilisent chacun cinq points ou traits.
+                  </p>
+                }
                 @if (selectedCipher() === 'semaphore') {
                   <section
                     class="semaphore-orientation-section"
@@ -378,6 +416,7 @@
                   (input)="updateAnswerLetterFromEvent($event, $index)"
                   (keydown)="handleAnswerLetterKeydown($event, $index)"
                   (focus)="selectLetterInput($event, $index)"
+                  (click)="selectLetterInput($event, $index)"
                   [attr.aria-label]="'Lettre ' + ($index + 1)"
                   [class.correct]="isCorrect()"
                   [disabled]="isCorrect()"
@@ -386,11 +425,7 @@
             </div>
           } @else if (!isCreeSymbolMode()) {
             <label class="answer-group">
-              <span>{{
-                isNatoLetterMode()
-                  ? 'Code NATO'
-                  : 'Mot original'
-              }}</span>
+              <span>{{ isNatoLetterMode() ? 'Code NATO' : 'Mot original' }}</span>
               <input
                 #answerField
                 class="answer-input"
@@ -477,8 +512,12 @@
                   currentPuzzle.answer +
                   '.'
                 : isCreeSymbolMode()
-                  ? 'Le symbole ' + currentPuzzle.encoded[0] + ' se lit « ' + currentPuzzle.answer + ' ».'
-                : 'Le mot codé a été décodé.'
+                  ? 'Le symbole ' +
+                    currentPuzzle.encoded[0] +
+                    ' se lit « ' +
+                    currentPuzzle.answer +
+                    ' ».'
+                  : 'Le mot codé a été décodé.'
             "
             [answer]="currentPuzzle.answer"
             [actionLabel]="

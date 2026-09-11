@@ -36,6 +36,7 @@ export type CipherPuzzle = {
   encodedAudioKeys?: string[];
   romanApproximation?: string;
   answerChoices?: string[];
+  morseDigitPractice?: MorseDigitPractice[];
 };
 
 export type CipherOption = {
@@ -46,6 +47,11 @@ export type CipherOption = {
 export type CipherLegendItem = {
   letter: string;
   symbol: string;
+};
+
+export type MorseDigitPractice = {
+  digit: string;
+  code: string;
 };
 
 export type CipherTransformStep = {
@@ -194,6 +200,7 @@ export class CiphersService {
     const normalizedAnswer = this.normalize(answer);
     const caesarShift = cipher === 'caesar' ? this.randomCaesarShift() : null;
     const creeEncoding = cipher === 'cree-syllabics' ? encodeFrenchWordAsEasternCree(answer) : null;
+    const morseDigitPractice = cipher === 'morse' ? this.createMorseDigitPractice() : null;
 
     return {
       answer,
@@ -211,6 +218,7 @@ export class CiphersService {
             romanApproximation: creeEncoding.roman,
           }
         : {}),
+      ...(morseDigitPractice ? { morseDigitPractice } : {}),
     };
   }
 
@@ -224,7 +232,7 @@ export class CiphersService {
     }
 
     if (cipher === 'morse') {
-      return this.createLegend(this.morseCodes);
+      return this.createLegend({ ...this.morseCodes, ...this.morseDigitCodes });
     }
 
     if (cipher === 'braille') {
@@ -409,6 +417,20 @@ export class CiphersService {
     }));
   }
 
+  private createMorseDigitPractice(): MorseDigitPractice[] {
+    const digits = Array.from({ length: 10 }, (_, index) => String(index));
+
+    for (let index = digits.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [digits[index], digits[swapIndex]] = [digits[swapIndex], digits[index]];
+    }
+
+    return digits.slice(0, 3).map((digit) => ({
+      digit,
+      code: this.morseDigitCodes[digit],
+    }));
+  }
+
   private createNatoCodePuzzle(): CipherPuzzle {
     const letter = this.randomWords.pick(
       Object.keys(this.natoWords),
@@ -518,6 +540,19 @@ export class CiphersService {
     x: '-..-',
     y: '-.--',
     z: '--..',
+  };
+
+  private readonly morseDigitCodes: Record<string, string> = {
+    '0': '-----',
+    '1': '.----',
+    '2': '..---',
+    '3': '...--',
+    '4': '....-',
+    '5': '.....',
+    '6': '-....',
+    '7': '--...',
+    '8': '---..',
+    '9': '----.',
   };
 
   private readonly tapCodeLetters: Record<string, string> = {

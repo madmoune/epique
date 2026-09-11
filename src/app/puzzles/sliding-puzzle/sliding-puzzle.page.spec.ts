@@ -29,4 +29,11 @@ describe('SlidingPuzzlePage', () => {
 
     expect(page.isSolved()).toBe(false);
   });
+
+  it('includes the piece number in image-mode labels when debug numbers are enabled', () => {
+    page.mode.set('image');
+    page.showImageTileNumbers.set(true);
+
+    expect(page.tileLabel(7)).toBe('Morceau d’image 7, numéro 7');
+  });
 });

@@ -8,8 +8,7 @@
       @if (mode() === 'word') {
         <p class="intro">
           Déplace le cavalier en L sur les cases ouvertes. Le bon parcours révèle un mot de
-          <strong>{{ puzzle()?.normalizedWord?.length ?? '...' }} lettres</strong> tiré de
-          <code>words.txt</code>.
+          <strong>{{ puzzle()?.normalizedWord?.length ?? '...' }} lettres</strong>.
         </p>
       } @else {
         <p class="intro">

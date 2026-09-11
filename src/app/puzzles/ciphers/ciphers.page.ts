@@ -60,6 +60,7 @@ export class CiphersPage implements OnDestroy {
   protected readonly letterByLetter = signal(true);
   protected readonly activeLetterIndex = signal(0);
   protected readonly revealedLetterIndex = signal<number | null>(null);
+  protected readonly revealedMorseDigitIndex = signal<number | null>(null);
   protected readonly hintLevel = signal(0);
   protected readonly isLoading = signal(true);
   protected readonly loadError = signal<string | null>(null);
@@ -323,13 +324,30 @@ export class CiphersPage implements OnDestroy {
 
   protected revealLetter(index: number): void {
     this.revealedLetterIndex.set(index);
+    this.revealedMorseDigitIndex.set(null);
 
+    this.startRevealTimer();
+  }
+
+  protected revealMorseDigit(index: number): void {
+    this.revealedLetterIndex.set(null);
+    this.revealedMorseDigitIndex.set(index);
+
+    this.startRevealTimer();
+  }
+
+  protected isMorseDigitRevealed(index: number): boolean {
+    return this.revealedMorseDigitIndex() === index;
+  }
+
+  private startRevealTimer(): void {
     if (this.revealTimer !== null) {
       window.clearTimeout(this.revealTimer);
     }
 
     this.revealTimer = window.setTimeout(() => {
       this.revealedLetterIndex.set(null);
+      this.revealedMorseDigitIndex.set(null);
       this.revealTimer = null;
     }, 3000);
   }
@@ -415,7 +433,7 @@ export class CiphersPage implements OnDestroy {
   }
 
   protected nextPuzzle(): void {
-    this.clearLetterReveal();
+    this.clearReveal();
     const nextPuzzle = this.ciphersService.createPuzzle(
       this.selectedCipher(),
       this.natoMode(),
@@ -435,17 +453,18 @@ export class CiphersPage implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.clearLetterReveal();
+    this.clearReveal();
     this.creeAudio.stop();
   }
 
-  private clearLetterReveal(): void {
+  private clearReveal(): void {
     if (this.revealTimer !== null) {
       window.clearTimeout(this.revealTimer);
       this.revealTimer = null;
     }
 
     this.revealedLetterIndex.set(null);
+    this.revealedMorseDigitIndex.set(null);
   }
 
   private async loadPuzzle(): Promise<void> {

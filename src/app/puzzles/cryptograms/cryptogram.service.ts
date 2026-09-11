@@ -97,6 +97,9 @@ export class CryptogramService {
 
   private normalizeSentence(sentence: string): string {
     return sentence
+      // The ligature is not decomposed by Unicode normalization, so expand it
+      // before splitting the sentence into individual cryptogram characters.
+      .replace(/[Œœ]/g, 'OE')
       .normalize('NFD')
       .replace(/\p{Diacritic}/gu, '')
       .toUpperCase();

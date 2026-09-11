@@ -125,6 +125,33 @@ const BANDS: DescribedSymbol['band'][] = ['none', 'top', 'middle', 'bottom'];
 const SYMMETRIES: SymmetryMode[] = ['balanced', 'offset', 'chaotic'];
 const DETAIL_REGIONS: DetailRegion[] = ['left', 'right', 'top', 'bottom', 'center'];
 const DETAIL_SHAPES: DetailShape[] = ['dot', 'ring', 'dash', 'spark'];
+const SYMBOL_DIFFERENCES = [
+  'layout',
+  'emblem',
+  'emblemPosition',
+  'emblemScale',
+  'border',
+  'band',
+  'colors',
+  'emblemColor',
+  'symmetry',
+  'detailRegion',
+  'detailCount',
+  'detailShape',
+] as const;
+type SymbolDifference = (typeof SYMBOL_DIFFERENCES)[number];
+const SECONDARY_DIFFERENCES: SymbolDifference[] = [
+  'emblemPosition',
+  'emblemScale',
+  'border',
+  'band',
+  'colors',
+  'emblemColor',
+  'symmetry',
+  'detailRegion',
+  'detailCount',
+  'detailShape',
+];
 
 @Component({
   selector: 'app-describe-symbols-page',
@@ -518,9 +545,30 @@ export class DescribeSymbolsPage implements OnDestroy {
 
   private createChoiceSet(target: DescribedSymbol): DescribedSymbol[] {
     const variants: DescribedSymbol[] = [target];
+    const shuffledDifferences = this.shuffle(SYMBOL_DIFFERENCES);
+    const primaryDifferences = [
+      'layout',
+      'emblem',
+      ...shuffledDifferences.filter(
+        (difference) => difference !== 'layout' && difference !== 'emblem',
+      ),
+    ].slice(0, 9) as SymbolDifference[];
 
     while (variants.length < 10) {
-      const variant = this.createSimilarSymbol(target, variants.length);
+      const variantIndex = variants.length - 1;
+      const primaryDifference = primaryDifferences[variantIndex];
+      const secondaryDifference =
+        variantIndex % 3 === 2
+          ? this.pick(
+              SECONDARY_DIFFERENCES.filter((difference) => difference !== primaryDifference),
+            )
+          : undefined;
+      const variant = this.createSimilarSymbol(
+        target,
+        variants.length,
+        primaryDifference,
+        secondaryDifference,
+      );
       if (!variants.some((symbol) => symbol.id === variant.id)) variants.push(variant);
     }
 
@@ -538,37 +586,84 @@ export class DescribeSymbolsPage implements OnDestroy {
     };
   }
 
-  private createSimilarSymbol(target: DescribedSymbol, seed: number): DescribedSymbol {
+  private createSimilarSymbol(
+    target: DescribedSymbol,
+    seed: number,
+    primaryDifference: SymbolDifference,
+    secondaryDifference?: SymbolDifference,
+  ): DescribedSymbol {
     const variant = structuredClone(target);
     variant.id = crypto.randomUUID();
 
-    const subtleChange = seed % 11;
-    if (subtleChange === 0) variant.emblem = this.nearbyValue(EMBLEMS, target.emblem);
-    if (subtleChange === 1)
-      variant.emblemPosition = this.nearbyValue(EMBLEM_POSITIONS, target.emblemPosition);
-    if (subtleChange === 2)
-      variant.emblemScale = this.nearbyValue(EMBLEM_SCALES, target.emblemScale);
-    if (subtleChange === 3) variant.border = this.nearbyValue(BORDERS, target.border);
-    if (subtleChange === 4) variant.band = this.nearbyValue(BANDS, target.band);
-    if (subtleChange === 5) {
-      const indexToChange = seed % variant.colors.length;
-      variant.colors[indexToChange] = this.pick(
-        PALETTE.filter((color) => !variant.colors.includes(color)),
-      );
+    this.applySymbolDifference(variant, target, primaryDifference, seed);
+    if (secondaryDifference) {
+      this.applySymbolDifference(variant, target, secondaryDifference, seed + 23);
     }
-    if (subtleChange === 6)
-      variant.emblemColor = this.pick(PALETTE.filter((color) => !variant.colors.includes(color)));
-    if (subtleChange === 7) variant.symmetry = this.nearbyValue(SYMMETRIES, target.symmetry);
-    if (subtleChange === 8)
-      variant.detailRegion = this.nearbyValue(DETAIL_REGIONS, target.detailRegion);
-    if (subtleChange === 9) {
-      const direction = seed % 2 === 0 ? 1 : -1;
-      variant.detailCount = Math.min(8, Math.max(2, target.detailCount + direction));
-    }
-    if (subtleChange === 10)
-      variant.detailShape = this.nearbyValue(DETAIL_SHAPES, target.detailShape);
 
     return variant;
+  }
+
+  private applySymbolDifference(
+    variant: DescribedSymbol,
+    target: DescribedSymbol,
+    difference: SymbolDifference,
+    seed: number,
+  ): void {
+    switch (difference) {
+      case 'layout':
+        variant.layout = this.nearbyValue(LAYOUTS, target.layout);
+        break;
+      case 'emblem':
+        variant.emblem = this.nearbyValue(EMBLEMS, target.emblem);
+        break;
+      case 'emblemPosition':
+        variant.emblemPosition = this.nearbyValue(EMBLEM_POSITIONS, target.emblemPosition);
+        break;
+      case 'emblemScale':
+        variant.emblemScale = this.nearbyValue(EMBLEM_SCALES, target.emblemScale);
+        break;
+      case 'border':
+        variant.border = this.nearbyValue(BORDERS, target.border);
+        break;
+      case 'band':
+        variant.band = this.nearbyValue(BANDS, target.band);
+        break;
+      case 'colors': {
+        const indexToChange = seed % variant.colors.length;
+        variant.colors[indexToChange] = this.pick(
+          PALETTE.filter(
+            (color) => !target.colors.includes(color) && color !== target.emblemColor,
+          ),
+        );
+        break;
+      }
+      case 'emblemColor':
+        variant.emblemColor = this.pick(
+          PALETTE.filter(
+            (color) => !variant.colors.includes(color) && color !== target.emblemColor,
+          ),
+        );
+        break;
+      case 'symmetry':
+        variant.symmetry = this.nearbyValue(SYMMETRIES, target.symmetry);
+        break;
+      case 'detailRegion':
+        variant.detailRegion = this.nearbyValue(DETAIL_REGIONS, target.detailRegion);
+        break;
+      case 'detailCount': {
+        const direction = seed % 2 === 0 ? 1 : -1;
+        variant.detailCount =
+          target.detailCount === 2
+            ? 3
+            : target.detailCount === 8
+              ? 7
+              : target.detailCount + direction;
+        break;
+      }
+      case 'detailShape':
+        variant.detailShape = this.nearbyValue(DETAIL_SHAPES, target.detailShape);
+        break;
+    }
   }
 
   private createSymbol(): DescribedSymbol {
@@ -600,7 +695,7 @@ export class DescribeSymbolsPage implements OnDestroy {
     return items[Math.floor(Math.random() * items.length)];
   }
 
-  private shuffle<T>(items: T[]): T[] {
+  private shuffle<T>(items: readonly T[]): T[] {
     return [...items].sort(() => Math.random() - 0.5);
   }
 
